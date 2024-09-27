@@ -59,7 +59,7 @@ const Achievements: React.FC = () => {
         // Decode the token to get user information
         const decoded = jwtDecode<DecodedToken>(token);
         setDecodedToken(decoded);
-
+        
         // Fetch lesson data
         const lessonUrl = `http://localhost:1274/api/lessonsUsers/user/${decoded.id}/lessons/count`;
         const pointsUrl = `http://localhost:1274/api/lessonsUsers/user/${decoded.id}/points`;
