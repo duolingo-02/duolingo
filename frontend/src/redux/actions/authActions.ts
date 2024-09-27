@@ -16,7 +16,10 @@ export const login = createAsyncThunk(
         credentials
       );
       console.log("login success", response.data);
-      return response.data; // Assuming response.data contains { token, userId }
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+      return response.data;
     } catch (error: any) {
       console.log("Login error", error);
       const errorMessage = error.response?.data?.message || "Login failed";
