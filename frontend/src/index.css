@@ -1,0 +1,27 @@
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Alata&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Alata&family=Carter+One&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #34434a;
+}
+
+.logoTitle {
+  font-family: "Carter One", system-ui;
+}
+
+input[type="file"]::file-selector-button {
+  content: "Choose a file" !important;
+  padding: 7px 10px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}

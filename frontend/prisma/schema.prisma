@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int        @id @default(autoincrement())
+  username       String     @unique
+  email          String     @unique
+  role           String     @default("USER")
+  passwordHash   String
+  profilePicture String?    @default("/default-pp.png")
+  totalPoints    Int        @default(0)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  progresses     Progress[]
+  lessons        LessonsUsers[]
+  achievements   UserAchievement[]
+  languages      Language[] @relation("UserLanguages")
+
+}
+
+model Question {
+  id        Int       @id @default(autoincrement())
+  questionText String
+  lessonId  Int
+  lesson    Lesson     @relation(fields: [lessonId], references: [id])
+  type      QuestionType
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  choices   Choice[]
+}
+
+model Progress {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  lessonId  Int
+  user      User      @relation(fields: [userId], references: [id])
+  lesson    Lesson    @relation(fields: [lessonId], references: [id])
+  status    ProgressStatus
+  score     Int?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model LessonsUsers {
+  id          Int       @id @default(autoincrement())
+  progress    Int       @default(0)
+  isCompleted Boolean   @default(false)
+  userId      Int
+  lessonId    Int
+  user        User      @relation(fields: [userId], references: [id])
+  lesson      Lesson    @relation(fields: [lessonId], references: [id])
+}
+
+model Lesson {
+  id             Int           @id @default(autoincrement())
+  title          String
+  type           LessonType
+  question       String
+  options        Json?         
+  answer         String?       
+  scrambledSentence Json?      
+  correctOrder   Json?         
+  isTrue         Boolean?      
+  points         Int
+  languageId     Int
+  language       Language      @relation(fields: [languageId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  progresses     Progress[]
+  lessonsUsers   LessonsUsers[]
+  questions      Question[]
+}
+
+model Language {
+  id             Int       @id @default(autoincrement())
+  name           String    @unique
+  description    String?
+  languagePicture String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  lessons        Lesson[]
+  users          User[]    @relation("UserLanguages")
+}
+
+model Choice {
+  id          Int     @id @default(autoincrement())
+  text        String
+  isCorrect   Boolean
+  questionId  Int
+  question    Question  @relation(fields: [questionId], references: [id])
+}
+
+model Achievement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  points      Int
+  picture     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id           Int         @id @default(autoincrement())
+  userId       Int
+  achievementId Int
+  user         User        @relation(fields: [userId], references: [id])
+  achievement  Achievement @relation(fields: [achievementId], references: [id])
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  ORDERING
+}
+
+enum ProgressStatus {
+  COMPLETED
+  IN_PROGRESS
+}
+
+enum LessonType {
+  MULTIPLE
+  ORDER
+  TRUE_FALSE
+}
