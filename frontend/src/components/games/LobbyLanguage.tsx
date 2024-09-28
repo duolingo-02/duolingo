@@ -1,13 +1,10 @@
-// ==============================
-// Importing React, Axios, and Hooks
-// ==============================
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+'use client'
 
-// ==============================
-// Importing Styles and Types
-// ==============================
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Image from "next/image";
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { fetchLanguages } from '../../redux/actions/languageAction';
 import {
   buttonStyles,
   containerStyles,
@@ -18,13 +15,8 @@ import {
   LanguageCardProps,
   NavigationButtonProps,
   SelectButtonProps,
-} from "../../types/Game"; // Importing types
+} from "../../types/Game";
 
-/**
- * NavigationButton Component
- *
- * Handles left and right navigation for languages.
- */
 const NavigationButton: React.FC<NavigationButtonProps> = ({
   direction,
   onClick,
@@ -39,11 +31,6 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
   );
 };
 
-/**
- * SelectButton Component
- *
- * Allows user to select a language.
- */
 const SelectButton: React.FC<SelectButtonProps> = ({ onSelect }) => {
   return (
     <button onClick={onSelect} className={buttonStyles.primary}>
@@ -52,17 +39,14 @@ const SelectButton: React.FC<SelectButtonProps> = ({ onSelect }) => {
   );
 };
 
-/**
- * LanguageCard Component
- *
- * Displays the selected language with an image and name.
- */
 const LanguageCard: React.FC<LanguageCardProps> = ({ image, name }) => {
   return (
     <div className="flex flex-col items-center">
-      <img
+      <Image
         src={image}
         alt={name}
+        width={256}
+        height={160}
         className="object-cover w-64 h-40 mx-auto rounded-lg shadow-lg"
       />
       <p className="mt-4 text-2xl text-center text-duolingoLight">{name}</p>
@@ -70,40 +54,35 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ image, name }) => {
   );
 };
 
-/**
- * Lobby Component
- *
- * Manages language selection and navigation for the lobby.
- */
 const Lobby: React.FC = () => {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    const fetchLanguages = async () => {
+    const fetchLanguagesData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:1274/api/language/get"
-        );
-        const formattedLanguages = response.data.map((language: any) => ({
-          id: language.id,
-          name: language.name,
-          image: language.languagePicture,
-        }));
-
-        setLanguages(formattedLanguages);
+        const resultAction = await dispatch(fetchLanguages());
+        if (fetchLanguages.fulfilled.match(resultAction)) {
+          const fetchedLanguages = resultAction.payload.map(lang => ({
+            ...lang,
+            image: lang.languagePicture || '' // Assuming 'languagePicture' is the correct field name
+          }));
+          setLanguages(fetchedLanguages);
+        } else if (fetchLanguages.rejected.match(resultAction)) {
+          setError("Error fetching languages");
+        }
         setLoading(false);
       } catch (err) {
         setError("Error fetching languages");
         setLoading(false);
       }
     };
-
-    fetchLanguages();
-  }, []);
+  
+    fetchLanguagesData();
+  }, [dispatch]);
 
   const handleLeftClick = () => {
     setCurrentIndex((prevIndex) =>
@@ -120,9 +99,11 @@ const Lobby: React.FC = () => {
   const handleSelectLanguage = () => {
     const selectedLanguage = languages[currentIndex];
     if (selectedLanguage) {
-      navigate(`/language/${selectedLanguage.id}/stages`);
+      router.push(`/language/${selectedLanguage.id}/stages`);
     }
-  };
+  }
+
+
 
   if (loading) {
     return (
@@ -142,10 +123,12 @@ const Lobby: React.FC = () => {
         </h1>
         <div className="flex items-center justify-center mt-8">
           <NavigationButton direction="left" onClick={handleLeftClick} />
-          <LanguageCard
-            image={languages[currentIndex].image}
-            name={languages[currentIndex].name}
-          />
+          {languages.length > 0 && (
+            <LanguageCard
+              image={languages[currentIndex].image}
+              name={languages[currentIndex].name}
+            />
+          )}
           <NavigationButton direction="right" onClick={handleRightClick} />
         </div>
         <div className="flex justify-center mt-8">

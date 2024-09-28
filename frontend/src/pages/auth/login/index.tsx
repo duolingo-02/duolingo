@@ -32,7 +32,7 @@ const Login: React.FC = () => {
       localStorage.setItem("token", response.token);
       
       console.log("Token set in localStorage:", response.token);
-      router.push("/home");
+      router.push("/");
     } catch (err) {
       const errorMessage = (err as any).message || "Login failed";
       console.error("Login failed", errorMessage);
