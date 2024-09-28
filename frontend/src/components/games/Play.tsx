@@ -1,63 +1,56 @@
-// ==============================
-// Importing Dependencies and Components
-// ==============================
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { containerStyles, typographyStyles } from "../../styles/styles";
-import MultipleChoiceQuiz from "./MultipleChoiceQuiz";
-import SentenceOrderQuiz from "./SentenceOrder";
-import TrueFalseQuiz from "./TrueFalseQuiz";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '../../hooks/useAuth';
+import { QuizData } from '../../types/Game';
+import MultipleChoiceQuiz from './MultipleChoiceQuiz';
+import TrueFalseQuiz from './TrueFalseQuiz';
+import SentenceOrderQuiz from './SentenceOrder';
 
-// ==============================
-// Importing the separated type
-// ==============================
-import { QuizData } from "../../types/Game";
-
-/**
- * Play Component
- *
- * Fetches and renders the appropriate quiz component based on the type.
- */
 const Play: React.FC = () => {
-  // Extract languageId and stageId from URL params
-  const { languageId, stageId } = useParams<{
-    languageId: string;
-    stageId: string;
-  }>();
-
-  // State management
+  const router = useRouter();
+  const { languageId, stageId } = router.query;
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { isAuthenticated } = useAuth();
 
-  // Fetch quiz data when component mounts
   useEffect(() => {
-    axios
-      .get(
-        `http://localhost:1274/api/lessons/${stageId}/language/${languageId}`
-      )
-      .then((response) => {
-        setQuizData(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération du quiz :", error);
-        setLoading(false);
-      });
+    const fetchQuizData = async () => {
+      if (languageId && stageId) {
+        try {
+          const response = await fetch(`/api/lessons/${stageId}/language/${languageId}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch quiz data');
+          }
+          const data = await response.json();
+          console.log('Quiz data received:', data);
+          setQuizData(data);
+        } catch (error) {
+          console.error("Error fetching quiz data:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchQuizData();
   }, [languageId, stageId]);
 
-  // Render loading state
-  if (loading) return <div>Chargement du quiz...</div>;
+  if (!languageId || !stageId) {
+    return <div>Loading...</div>;
+  }
 
-  // Authentication check
-  if (!isAuthenticated) return <div>Vous devez être connecté pour jouer.</div>;
+  if (loading) {
+    return <div>Chargement du quiz...</div>;
+  }
 
-  // Handle missing quiz data
-  if (!quizData) return <div>Aucune donnée de quiz disponible.</div>;
+  if (!isAuthenticated) {
+    return <div>Vous devez être connecté pour jouer.</div>;
+  }
 
-  // Render the correct quiz component based on the quiz type
+  if (!quizData) {
+    return <div>Aucune donnée de quiz disponible.</div>;
+  }
+
   const renderQuizComponent = () => {
     switch (quizData.type) {
       case "multiple":
@@ -81,8 +74,11 @@ const Play: React.FC = () => {
       case "order":
         return (
           <SentenceOrderQuiz
-            sentence={quizData.correctOrder!.join(" ")}
-            scrambled={quizData.scrambledSentence!}
+            questions={{
+              question: quizData.correctOrder!.join(" "),
+              options: quizData.scrambledSentence!,
+              answer: quizData.correctOrder!.join(" "),
+            }}
             language={languageId === "2" ? "fr" : "en"}
           />
         );
@@ -92,13 +88,9 @@ const Play: React.FC = () => {
   };
 
   return (
-    <div className={`${containerStyles.fullWidthCenter} p-4`}>
-      <div className={`${containerStyles.card}`}>
-        <h1 className={`${typographyStyles.heading1} text-center mb-8`}>
-          {quizData.title}
-        </h1>
-        {renderQuizComponent()}
-      </div>
+    <div>
+      <h1>Quiz</h1>
+      {renderQuizComponent()}
     </div>
   );
 };

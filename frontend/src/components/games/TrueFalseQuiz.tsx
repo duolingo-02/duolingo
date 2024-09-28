@@ -9,11 +9,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { decrementLives } from "../../redux/actions/gameActions";
 import { buttonStyles, typographyStyles } from "../../styles/styles"; // Imported styles
 import { TrueFalseQuizProps } from "../../types/Game";
+import { useRouter } from "next/router";
 
 const TrueFalseQuiz: React.FC<TrueFalseQuizProps> = ({ questions }) => {
   // URL Parameters
-  const { languageId, stageId } = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
+const { languageId, stageId } = router.query;
   const dispatch = useDispatch();
 
   // State Management
@@ -126,11 +127,11 @@ const TrueFalseQuiz: React.FC<TrueFalseQuizProps> = ({ questions }) => {
   // Navigate to the Next Stage
   const handleNextStage = () => {
     const nextStageId = Number(stageId) + 1;
-    navigate(`/language/${languageId}/stages/${nextStageId}/play`);
+    router.push(`/language/${languageId}/stages/${nextStageId}/play`);
   };
-
+  
   const handleBack = () => {
-    navigate(-1);
+    router.back();
   };
 
   // Progress Bar

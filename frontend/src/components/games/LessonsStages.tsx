@@ -1,70 +1,71 @@
+'use client'
+
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ReactComponent as LockedIcon } from "../../assets/icons/closed.svg"; // Icône de stage verrouillé
-import { useDecodeToken } from "../../hooks/useDecode"; // Décode le token utilisateur
+import { useRouter } from 'next/router';
+import LockedIcon from "../../assets/icons/closed.svg";
+import { useDecodeToken } from "../../hooks/useDecode";
 import { containerStyles, typographyStyles } from "../../styles/styles";
 import { Lesson } from "../../types/Game";
 
-// ==============================
-// Composant StageSelection
-// ==============================
-const StageSelection: React.FC<{ languageId: number }> = ({ languageId }) => {
-  // États pour les leçons, la progression et l'état de chargement
+const LessonsStages: React.FC<{ languageId: number }> = ({ languageId }) => {
+  const router = useRouter();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progressData, setProgressData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
   const decodedToken = useDecodeToken();
-  const userId = decodedToken ? decodedToken.id : null;
+  const userId = decodedToken?.userId;
 
-  // ==============================
-  // Récupérer les leçons et la progression à la montée du composant
-  // ==============================
   useEffect(() => {
     const fetchLessonsAndProgress = async () => {
+      setLoading(true);
+      setError(null);
       const token = localStorage.getItem("token");
       if (!token) {
-        console.error("Token manquant");
+        setError("Token manquant");
+        setLoading(false);
         return;
       }
       try {
-        // Récupérer les leçons disponibles pour la langue choisie
+        console.log('Fetching lessons and progress', { languageId, userId });
         const lessonResponse = await axios.get(
-          `http://localhost:1274/api/lessons/language/${languageId}`,
+          `/api/lessons/language/${languageId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         const lessonsData = lessonResponse.data;
+        console.log('Lessons data received', lessonsData);
 
-        // Récupérer la progression de l'utilisateur dans les leçons
         const progressResponse = await axios.get(
-          `http://localhost:1274/api/lessons/user/${userId}/language/${languageId}/progress`,
+          `/api/lessons/user/${userId}/language/${languageId}/progress`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         const progressData = progressResponse.data;
+        console.log('Progress data received', progressData);
 
-        // Trier les leçons en mettant les complétées en premier
         const sortedLessons = sortLessonsByCompletion(
           lessonsData,
           progressData
         );
-
-        setLessons(sortedLessons); // Stocker les leçons triées
-        setProgressData(progressData); // Stocker les données de progression
-        setLoading(false); // Désactiver l'état de chargement après la récupération
+        setLessons(sortedLessons);
+        setProgressData(progressData);
       } catch (error) {
         console.error("Erreur lors de la récupération des données :", error);
-        setLoading(false); // Désactiver l'état de chargement en cas d'erreur
+        setError("Erreur lors de la récupération des données");
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (userId) {
-      fetchLessonsAndProgress(); // Récupérer les données lorsque l'utilisateur est identifié
+    if (userId && languageId) {
+      fetchLessonsAndProgress();
+    } else {
+      setLoading(false);
     }
   }, [languageId, userId]);
 
@@ -92,7 +93,7 @@ const StageSelection: React.FC<{ languageId: number }> = ({ languageId }) => {
   // Naviguer vers le stage sélectionné
   // ==============================
   const handleStageClick = (stageId: number) => {
-    navigate(`/language/${languageId}/stages/${stageId}/play`);
+    router.push(`/language/${languageId}/stages/${stageId}/play`);
   };
 
   // ==============================
@@ -105,7 +106,6 @@ const StageSelection: React.FC<{ languageId: number }> = ({ languageId }) => {
     if (!stageProgress) return { isCompleted: false, progress: 0 }; // Retourner les valeurs par défaut si aucune progression n'est trouvée
     return stageProgress; // Retourner la progression trouvée
   };
-
   // ==============================
   // Vérifier si un stage est débloqué
   // ==============================
@@ -174,4 +174,4 @@ const StageSelection: React.FC<{ languageId: number }> = ({ languageId }) => {
   );
 };
 
-export default StageSelection;
+export default LessonsStages;

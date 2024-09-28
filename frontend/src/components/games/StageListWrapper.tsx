@@ -1,23 +1,18 @@
-// ==============================
-// Importing React and Router
-// ==============================
-import React from "react";
-import { useParams } from "react-router-dom";
+import React from 'react';
+import { useRouter } from 'next/router';
+import LessonsStages from './LessonsStages';
 
-// ==============================
-// Importing Components
-// ==============================
-import StageList from "./LessonsStages";
 
-/**
- * StageListWrapper Component
- *
- * Retrieves languageId from URL params and passes it to StageList.
- */
 const StageListWrapper: React.FC = () => {
-  const { languageId } = useParams<{ languageId: string }>(); // Extract languageId from URL
+  const router = useRouter();
+  const { languageId } = router.query;
+// Importing Components
+  if (!languageId || Array.isArray(languageId)) {
+    return <div>Error: Invalid Language ID</div>;
+  }
 
-  return <StageList languageId={Number(languageId)} />; // Pass languageId as a prop to StageList
+  return <LessonsStages languageId={parseInt(languageId, 10)} />;
 };
 
 export default StageListWrapper;
+

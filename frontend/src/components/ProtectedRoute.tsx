@@ -6,7 +6,7 @@ import React from "react";
 // ==============================
 // Importing Router Components
 // ==============================
-import { Navigate } from "react-router-dom";
+import { useRouter } from "next/router";
 
 // ==============================
 // Importing Custom Hooks
@@ -17,6 +17,7 @@ import { useAuth } from "../hooks/useAuth";
 // Importing Types
 // ==============================
 import { ProtectedRouteProps } from "../types/types"; // Importing the type definition
+const router = useRouter();
 
 /**
  * ProtectedRoute Component
@@ -35,12 +36,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Redirect to login if route is protected and user is not authenticated
   if (isProtected && !isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    router.push("/login");
+    return null;
   }
 
   // Redirect to login if route is admin-only and user is not an admin
   if (forAdmin && !isAdmin) {
-    return <Navigate to="/login" replace />;
+    router.push("/login");
+    return null;
   }
 
   // Render child components if access is granted
