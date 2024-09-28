@@ -69,9 +69,6 @@ const LessonsStages: React.FC<{ languageId: number }> = ({ languageId }) => {
     }
   }, [languageId, userId]);
 
-  // ==============================
-  // Fonction pour trier les leçons : complétées d'abord
-  // ==============================
   const sortLessonsByCompletion = (lessons: Lesson[], progressData: any[]) => {
     return lessons.sort((a, b) => {
       const progressA = progressData.find((p) => p.lessonId === a.id);
@@ -80,47 +77,35 @@ const LessonsStages: React.FC<{ languageId: number }> = ({ languageId }) => {
       const completedA = progressA?.isCompleted || false;
       const completedB = progressB?.isCompleted || false;
 
-      // Les leçons complétées viennent avant celles non complétées
       if (completedA && !completedB) return -1;
       if (!completedA && completedB) return 1;
 
-      // Si les deux sont complétées ou non, conserver l'ordre initial
       return 0;
     });
   };
 
-  // ==============================
-  // Naviguer vers le stage sélectionné
-  // ==============================
   const handleStageClick = (stageId: number) => {
     router.push(`/language/${languageId}/stages/${stageId}/play`);
   };
 
-  // ==============================
-  // Obtenir la progression d'un stage
-  // ==============================
   const getStageProgress = (lessonId: number) => {
+    if (progressData.length === 0) return { isCompleted: false, progress: 0 };
     const stageProgress = progressData.find(
       (progress) => progress.lessonId === lessonId
     );
-    if (!stageProgress) return { isCompleted: false, progress: 0 }; // Retourner les valeurs par défaut si aucune progression n'est trouvée
-    return stageProgress; // Retourner la progression trouvée
+    return stageProgress || { isCompleted: false, progress: 0 };
   };
-  // ==============================
-  // Vérifier si un stage est débloqué
-  // ==============================
-  const isStageUnlocked = (lessonId: number, index: number) => {
-    if (index === 0) return true; // Le premier stage est toujours déverrouillé
+
+  const isStageUnlocked = (index: number) => {
+    if (index === 0) return true;
+    if (progressData.length === 0) return index === 0;
     const previousLessonId = lessons[index - 1]?.id;
     const previousLessonProgress = progressData.find(
       (progress) => progress.lessonId === previousLessonId
     );
-    return previousLessonProgress && previousLessonProgress.isCompleted; // Le stage est débloqué si le précédent est complété
+    return previousLessonProgress?.isCompleted || false;
   };
 
-  // ==============================
-  // Affichage du composant pendant le chargement
-  // ==============================
   if (loading) {
     return (
       <div className="text-center text-duolingoLight">
@@ -129,9 +114,6 @@ const LessonsStages: React.FC<{ languageId: number }> = ({ languageId }) => {
     );
   }
 
-  // ==============================
-  // Rendu du composant de sélection des stages
-  // ==============================
   return (
     <div className={`${containerStyles.fullWidthCenter} p-4`}>
       <div className={containerStyles.card}>
@@ -141,8 +123,8 @@ const LessonsStages: React.FC<{ languageId: number }> = ({ languageId }) => {
 
         <div className="grid grid-cols-2 gap-8 mt-8 md:grid-cols-4">
           {lessons.map((lesson, index) => {
-            const { isCompleted, progress } = getStageProgress(lesson.id); // Obtenir la progression de l'étape
-            const isUnlocked = isStageUnlocked(lesson.id, index); // Vérifier si le stage est débloqué
+            const { isCompleted, progress } = getStageProgress(lesson.id);
+            const isUnlocked = isStageUnlocked(index);
 
             return (
               <div
@@ -156,14 +138,14 @@ const LessonsStages: React.FC<{ languageId: number }> = ({ languageId }) => {
                     ? "hover:scale-110 cursor-pointer"
                     : "opacity-70 hover:scale-105 cursor-not-allowed hover:opacity-50 "
                 }`}
-                onClick={() => isUnlocked && handleStageClick(lesson.id)} // Naviguer si le stage est débloqué
+                onClick={() => isUnlocked && handleStageClick(lesson.id)}
               >
                 {isCompleted ? (
-                  <span className="text-2xl font-bold">✅</span> // Icône de stage complété
+                  <span className="text-2xl font-bold">✅</span>
                 ) : isUnlocked ? (
-                  <span className="text-2xl font-bold">{index + 1}</span> // Afficher le numéro de stage
+                  <span className="text-2xl font-bold">{index + 1}</span>
                 ) : (
-                  <LockedIcon className="h-16 " /> // Icône de stage verrouillé
+                  <LockedIcon className="h-16 " />
                 )}
               </div>
             );
