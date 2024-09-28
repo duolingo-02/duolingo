@@ -3,15 +3,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-import { login } from "../../redux/actions/authActions";
-import { AppDispatch, RootState } from "../../redux/store/store";
+import { login } from "../../../redux/actions/authActions";
+import { AppDispatch, RootState } from "../../../redux/store/store";
 
 import {
   buttonStyles,
   containerStyles,
   formStyles,
   typographyStyles,
-} from "../../styles/styles";
+} from "../../../styles/styles";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -32,7 +32,7 @@ const Login: React.FC = () => {
       localStorage.setItem("token", response.token);
       
       console.log("Token set in localStorage:", response.token);
-      // router.push("/home");
+      router.push("/home");
     } catch (err) {
       const errorMessage = (err as any).message || "Login failed";
       console.error("Login failed", errorMessage);

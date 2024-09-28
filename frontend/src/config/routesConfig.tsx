@@ -11,12 +11,12 @@ import MultipleChoiceQuiz from "../components/games/MultipleChoiceQuiz"; // Fixe
 // Import page components
 import AchievementsPage from "../pages.aziz/achievements/Achievements";
 import AdminDashboard from "../pages.aziz/admin/AdminDashboard";
-import Login from "../pages.aziz/auth/Login";
-import SignUp from "../pages.aziz/auth/SignUp";
+import Login from "../pages/auth/login";
+import SignUp from "../pages/auth/signup";
 import Home from "../pages.aziz/home/Home";
 import Terme from "../pages.aziz/home/Termes";
 import UserProfile from "../pages.aziz/profile/UserProfile";
-import HeroWelcome from "../pages.aziz/welcome/HeroWelcome";
+import HeroWelcome from "../pages/welcome";
 
 
 // Import type definitions

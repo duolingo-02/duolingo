@@ -6,7 +6,7 @@ import multer from "multer";
 import fs from 'fs';
 
 const saltRounds = 10;
-const domain = "http://localhost:3000/uploads/";
+const domain = "/uploads/";
 
 const upload = multer({
   dest: './public/uploads/',

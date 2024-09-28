@@ -8,8 +8,8 @@ import { useRouter } from 'next/router'; // Keep this for Next.js navigation
 // ==============================
 // Importing Actions and Store
 // ==============================
-import { signup } from "../../redux/actions/authActions";
-import { AppDispatch, RootState } from "../../redux/store/store";
+import { signup } from "../../../redux/actions/authActions";
+import { AppDispatch, RootState } from "../../../redux/store/store";
 
 // ==============================
 // Importing Styles
@@ -19,7 +19,7 @@ import {
   containerStyles,
   formStyles,
   typographyStyles,
-} from "../../styles/styles";
+} from "../../../styles/styles";
 import Link from "next/link";
 
 /**
