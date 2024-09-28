@@ -56,8 +56,10 @@ export type MultipleChoiceQuizProps = {
     question: string;
     options: string[];
     answer: string;
-  }[];
+  };
+  language: string;
 };
+
 
 // Type definition for the QuizData
 export interface QuizData {
@@ -77,9 +79,12 @@ export interface QuizData {
 
 // Type definition for SentenceOrderQuiz props
 export type SentenceOrderProps = {
-  sentence: string;
-  scrambled: string[];
-  language: "fr" | "en" | "es";
+  questions: {
+    question: string;
+    options: string[];
+    answer: string;
+  };
+  language: string;
 };
 
 // Type definition for StageList component props
@@ -93,4 +98,5 @@ export interface TrueFalseQuizProps {
     statement: string;
     isTrue: boolean;
   }[];
+  language: string;
 }
